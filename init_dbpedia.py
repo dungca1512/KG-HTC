@@ -13,8 +13,23 @@ from src.graph_db import GraphDB
 
 load_dotenv()
 
+config = {
+    "data_name": "dbpedia",
+    "data_path": f"dataset/dbpedia/DBPEDIA_val.csv",
+    "output_path": "dataset/dbpedia/llm_graph_gpt3.json",
+    "vectdb_path": "database/dbpedia",
+    "template": {
+        "sys": "prompts/system/dbpedia/llm_graph.txt",
+        "user": "prompts/user/dbpedia/llm_graph.txt"
+    },
+    "query_params": {
+        "l2_top_k": 10,
+        "l3_top_k": 40
+    }
+}
+
 # read csv file
-df = pd.read_csv('dataset/dbpedia/DBPEDIA_val.csv')
+df = pd.read_csv(config["data_path"])
 ds = df.to_dict(orient="records")
 
 graph_db = GraphDB()
@@ -27,8 +42,8 @@ MERGE (level1)-[:contains]->(level2)
 MERGE (level2)-[:contains]->(level3)
 """
 vector_db = VectorDB(
-    database_path="database/dbpedia",
-    collection_name="dbpedia"
+    database_path=config["vectdb_path"],
+    collection_name=config["data_name"]
 )
 
 for data in tqdm(ds):
