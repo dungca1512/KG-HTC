@@ -5,9 +5,9 @@ from src.vector_db import VectorDB
 
 
 class Pipeline:
-    def __init__(self, config: dict):
+    def __init__(self, llm: LLM, config: dict):
         self._config = config
-        self._llm = LLM()
+        self._llm = llm
         self._graph_db = GraphDB()
         self._vector_db = VectorDB(
             database_path=self._config["vectdb_path"],

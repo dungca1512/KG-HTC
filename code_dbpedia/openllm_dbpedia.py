@@ -8,7 +8,7 @@ import random
 root_dir = str(Path(__file__).parent.parent)
 sys.path.append(root_dir)
 
-from src.llm import LLM
+from src.llm_ollama import LLM
 from src.graph_db import GraphDB
 from src.vector_db import VectorDB
 from src.pipeline import Pipeline
@@ -16,8 +16,9 @@ from src.pipeline import Pipeline
 
 config = {
     "data_name": "dbpedia",
+    "model_type": "qwen2.5:14b",
     "data_path": f"dataset/dbpedia/DBPEDIA_val.csv",
-    "output_path": "dataset/dbpedia/llm_graph_gpt3.json",
+    "output_path": "dataset/dbpedia/llm_graph_qwen7b.json",
     "vectdb_path": "database/dbpedia",
     "template": {
         "sys": "prompts/system/dbpedia/llm_graph.txt",
@@ -31,10 +32,12 @@ config = {
 
 # read csv file
 df = pd.read_csv(config["data_path"])
+df = df.sample(n=1000, random_state=42)
 ds = df.to_dict(orient="records")
 
+llm = LLM(model_type=config["model_type"])
 graph_db = GraphDB()
-pipeline = Pipeline(config)
+pipeline = Pipeline(llm, config)
 
 inference_list = []
 for idx in tqdm(range(len(ds))):
