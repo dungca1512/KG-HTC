@@ -1,0 +1,1 @@
+Classify the input text related to a research into one of the following subjects: {category_text}. You must directly output one of the categories and do not add ", ', and *.

@@ -1,0 +1,6 @@
+Classify the review of a product into one of the following categories: {category_text}. You must directly output one of the categories and do not add ", ', and *.
+
+Here is the partial knowledge graph: 
+"""
+{knowledge}
+"""

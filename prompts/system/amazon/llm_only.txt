@@ -1,0 +1,1 @@
+Classify the review of a product into one of the following categories: {category_text}. You must direcly output one of the categories.

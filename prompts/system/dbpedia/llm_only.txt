@@ -1,0 +1,1 @@
+Classify the input text into one of the following categories: {category_text}. You must directly output one of the categories and do not add ", ', and *.
