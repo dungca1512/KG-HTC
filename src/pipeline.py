@@ -1,5 +1,3 @@
-import os
-import dotenv
 from typing import List, Dict, Any
 from src.llm import LLM
 from src.graph_db import GraphDB

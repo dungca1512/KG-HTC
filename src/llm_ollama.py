@@ -1,7 +1,6 @@
 import ollama
 from ollama import ChatResponse
 from typing import Optional
-import os
 import dotenv
 
 

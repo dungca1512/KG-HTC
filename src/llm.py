@@ -1,6 +1,5 @@
 from openai import AzureOpenAI
 from openai.types.chat import ChatCompletion
-from typing import Optional
 import os
 import dotenv
 
