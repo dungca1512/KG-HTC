@@ -31,10 +31,11 @@ class LLM:
                 max_tokens=self._max_tokens,
                 top_p=self._top_p,
             )
+            response = response.choices[0].message.content
         except Exception as e:
             response = None
 
-        return response.choices[0].message.content
+        return response
     
     def construct_messages(self, sys_msg: str, user_msg: str) -> list[dict]:
         messages = [

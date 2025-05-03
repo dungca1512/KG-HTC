@@ -1,4 +1,5 @@
 from typing import List, Dict, Any
+import random
 from src.llm import LLM
 from src.graph_db import GraphDB
 from src.vector_db import VectorDB
@@ -27,12 +28,13 @@ class Pipeline:
     def query_related_nodes(self, text: str) -> Dict[str, Any]:
         return {
             "l2": self._vector_db.query_l2(text, self._config["query_params"]["l2_top_k"])["documents"][0],
-            "l3": self._vector_db.query_l3(text, self._config["query_params"]["l3_top_k"])["documents"][0]
+            "l3": self._vector_db.query_l3(text, self._config["query_params"]["l3_top_k"])["documents"][0] if "l3_top_k" in self._config["query_params"] else None
         }
     
     def build_linked_labels(self, l3_nodes: List[str], related_l2_nodes: List[str]) -> List[str]:
         labels = []
         for l3_node in l3_nodes:
+            # print(l3_node)
             l2_node = self._graph_db.query_l2_from_l3(l3_node)
             l1_node = self._graph_db.query_l1_from_l2(l2_node)
             if l2_node in related_l2_nodes:
@@ -51,6 +53,10 @@ class Pipeline:
         user_msg = self.user_template.format(text=query_txt_vecdb)
         messages = self._llm.construct_messages(sys_msg, user_msg)
         response = self._llm.chat(messages)
+
+        if response is None:
+            # random choose one from context_nodes
+            response = random.choice(context_nodes)
         
         return response
     

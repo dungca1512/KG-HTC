@@ -15,14 +15,14 @@ from src.pipeline import Pipeline
 
 
 config = {
-    "data_name": "dbpedia",
-    "model_type": "qwen2.5:14b",
-    "data_path": f"dataset/dbpedia/DBPEDIA_val.csv",
-    "output_path": "dataset/dbpedia/llm_graph_qwen7b.json",
-    "vectdb_path": "database/dbpedia",
+    "data_name": "amazon",
+    "model_type": "qwen2.5:7b",
+    "data_path": f"dataset/amazon/amazon_val.csv",
+    "output_path": "dataset/amazon/amazon_qwen7b.json",
+    "vectdb_path": "database/open_llm",
     "template": {
-        "sys": "prompts/system/dbpedia/llm_graph.txt",
-        "user": "prompts/user/dbpedia/llm_graph.txt"
+        "sys": "prompts/system/amazon/llm_graph.txt",
+        "user": "prompts/user/amazon/llm_graph.txt"
     },
     "query_params": {
         "l2_top_k": 10,
@@ -32,7 +32,7 @@ config = {
 
 # read csv file
 df = pd.read_csv(config["data_path"])
-df = df.sample(n=1000, random_state=42)
+df = df.sample(n=5000, random_state=42)
 ds = df.to_dict(orient="records")
 
 llm = LLM(model_type=config["model_type"])
@@ -55,6 +55,7 @@ for idx in tqdm(range(len(ds))):
     ).lower().replace(' ', '').replace('*', '').replace('\'', '').replace('\"', '')
 
     child_level1 = graph_db.query_l2_from_l1(pred_level1)
+    # print(child_level1)
     potential_level2 = list(set(child_level1 + retrieved_nodes["l2"]))
     pred_level2 = pipeline.predict_level(
         query_txt_vecdb, 
@@ -63,6 +64,7 @@ for idx in tqdm(range(len(ds))):
     ).lower().replace(' ', '').replace('*', '').replace('\'', '').replace('\"', '')
 
     child_level2 = graph_db.query_l3_from_l2(pred_level2)
+    # print(child_level2)
     potential_level3 = list(set(child_level2 + retrieved_nodes["l3"]))
     pred_level3 = pipeline.predict_level(
         query_txt_vecdb, 
@@ -72,9 +74,7 @@ for idx in tqdm(range(len(ds))):
     
     data["gpt3_graph_l1"], data["gpt3_graph_l2"], data["gpt3_graph_l3"] = pred_level1, pred_level2, pred_level3
     inference_list.append(data)
-    print(data)
+    # print(data)
 
-    # with open("dataset/dbpedia/llm_graph_gpt3.json", "w") as f:
-    #     json.dump(inference_list, f, indent=4)
-
-    break
+    with open(config["output_path"], "w") as f:
+        json.dump(inference_list, f, indent=4)

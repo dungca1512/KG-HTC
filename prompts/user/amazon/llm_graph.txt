@@ -1,6 +1,6 @@
 Review: 
 """
-{review}
+{text}
 """
 
 Category:
