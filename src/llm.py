@@ -9,9 +9,9 @@ dotenv.load_dotenv()
 class LLM:
     def __init__(
         self, 
-        temperature: float = 1,
+        temperature: float = 0.4,
         max_tokens: int = 1024,
-        top_p: float = 1.0,
+        top_p: float = 0.4,
     ):
         self._client = AzureOpenAI(
             api_version=os.environ["API_VERSION"],
