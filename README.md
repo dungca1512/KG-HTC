@@ -9,7 +9,7 @@ Then, leveraging these candidate labels, the system dynamically retrieves the mo
 
 For the retrieved subgraph, an upwards propagation algorithm is employed to systematically enumerate all possible hierarchical paths from the leaf nodes to the root, with each path representing a complete reversed hierarchical label sequence. These structured sequences are subsequently concatenated into a prompt, which is fed into a large language model to perform the zero-shot classification task. 
 
- [pipeline.pdf](script_main/pipeline.pdf)
+![evaluation](script_main/pipeline.png)
 
 
 
@@ -19,4 +19,4 @@ We evaluate our approach using three public datasets and achieve new state-of-th
 
 ![evaluation](script_main/evaluation.png)
 
- [f1_decay_rates.pdf](script_main/f1_decay_rates.pdf) 
+![evaluation](script_main/f1_decay_rates.png)
