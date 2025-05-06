@@ -17,7 +17,7 @@ config = {
     "data_name": "wos",
     "model_type": "qwen2.5:7b",
     "data_path": f"dataset/wos/Meta-data/Data.xlsx",
-    "output_path": "dataset/open_llm/wos_qwen7b.json",
+    "output_path": "dataset/wos/llm_graph_gpt3.json",
     "vectdb_path": "database/wos",
     "template": {
         "sys": "prompts/system/wos/llm_graph.txt",
