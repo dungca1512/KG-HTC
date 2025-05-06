@@ -17,4 +17,6 @@ For the retrieved subgraph, an upwards propagation algorithm is employed to syst
 
 We evaluate our approach using three public datasets and achieve new state-of-the-art results for all of them. Without relying on any annotated data, the KG-HTC method significantly enhances the model's capability to discriminate long-tail and sparse labels. 
 
-![evaluation](../KG-HTC/script_main/evaluation.png)
+![evaluation](../KG-HTC-main/script_main/evaluation.png)
+
+ [f1_decay_rates.pdf](script_main/f1_decay_rates.pdf) 
