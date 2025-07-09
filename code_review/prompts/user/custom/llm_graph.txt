@@ -1,0 +1,6 @@
+App Review Text: 
+"""
+{text}
+"""
+
+Categories:

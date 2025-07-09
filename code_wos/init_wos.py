@@ -14,10 +14,10 @@ from src.graph_db import GraphDB
 load_dotenv()
 
 config = {
-    "data_name": "wos",
-    "data_path": f"dataset/wos/Meta-data/Data.xlsx",
-    "output_path": "dataset/wos/ablation_full_kg.json",
-    "vectdb_path": "database/wos",
+    "data_name": "ai_agent_wos",
+    "data_path": f"dataset/ai_agent_wos/Meta-data/Data.xlsx",
+    "output_path": "dataset/ai_agent_wos/ablation_full_kg.json",
+    "vectdb_path": "database/ai_agent_wos",
     "template": {
         "sys": "prompts/system/wos/llm_graph.txt",
         "user": "prompts/user/wos/llm_graph.txt"
@@ -43,11 +43,11 @@ vector_db = VectorDB(
     collection_name=config["data_name"]
 )
 
-# for data in tqdm(ds):
-#     graph_db.create_database(
-#         query_create_graph, l1=data["Domain"].lower().replace(' ', ''), 
-#         l2=data["area"].lower().replace(' ', '')
-#     )
+for data in tqdm(ds):
+    graph_db.create_database(
+        query_create_graph, l1=data["Domain"].lower().replace(' ', ''), 
+        l2=data["area"].lower().replace(' ', '')
+    )
 
 # create vector db
 df = pd.DataFrame(ds)

@@ -39,30 +39,49 @@ class GraphDB:
         MATCH (level1:Category1)-[:contains]->(level2:Category2 {name: $l2}) 
         RETURN level1
         """
-
-        return self._query_database(query_text, l2=l2).records[0].get("level1").get("name")
+        
+        try:
+            results = self._query_database(query_text, l2=l2).records
+            if len(results) == 0:
+                raise Exception(f"No L1 parent found for L2: {l2}")
+            return results[0].get("level1").get("name")
+        except Exception as e:
+            raise Exception(f"Error querying L1 from L2 '{l2}': {e}")
     
     def query_l2_from_l3(self, l3: str) -> str:
         query_text = """
         MATCH (level2:Category2)-[:contains]->(level3:Category3 {name: $l3}) 
         RETURN level2
         """
-
-        return self._query_database(query_text, l3=l3).records[0].get("level2").get("name")
+        
+        try:
+            results = self._query_database(query_text, l3=l3).records
+            if len(results) == 0:
+                raise Exception(f"No L2 parent found for L3: {l3}")
+            return results[0].get("level2").get("name")
+        except Exception as e:
+            raise Exception(f"Error querying L2 from L3 '{l3}': {e}")
     
     def query_l2_from_l1(self, l1: str) -> list[str]:
         query_text = """
         MATCH (level1:Category1 {name: $l1})-[:contains]->(level2:Category2) 
         RETURN level2
         """
-
-        return [record.get("level2").get("name") for record in self._query_database(query_text, l1=l1).records]
+        
+        try:
+            results = self._query_database(query_text, l1=l1).records
+            return [record.get("level2").get("name") for record in results]
+        except Exception as e:
+            raise Exception(f"Error querying L2 children from L1 '{l1}': {e}")
     
     def query_l3_from_l2(self, l2: str) -> list[str]:
         query_text = """
         MATCH (level2:Category2 {name: $l2})-[:contains]->(level3:Category3) 
         RETURN level3
         """
-
-        return [record.get("level3").get("name") for record in self._query_database(query_text, l2=l2).records]
-    
+        
+        try:
+            results = self._query_database(query_text, l2=l2).records
+            return [record.get("level3").get("name") for record in results]
+        except Exception as e:
+            raise Exception(f"Error querying L3 children from L2 '{l2}': {e}")

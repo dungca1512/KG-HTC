@@ -14,11 +14,11 @@ from src.pipeline import Pipeline
 
 
 config = {
-    "data_name": "wos",
+    "data_name": "ai_agent_wos",
     "model_type": "qwen2.5:7b",
-    "data_path": f"dataset/wos/Meta-data/Data.xlsx",
-    "output_path": "dataset/wos/llm_graph_gpt3.json",
-    "vectdb_path": "database/wos",
+    "data_path": f"dataset/ai_agent_wos/Meta-data/Data.xlsx",
+    "output_path": "dataset/ai_agent_wos/llm_graph_gpt3.json",
+    "vectdb_path": "database/ai_agent_wos",
     "template": {
         "sys": "prompts/system/wos/llm_graph.txt",
         "user": "prompts/user/wos/llm_graph.txt"
@@ -68,5 +68,3 @@ for idx in tqdm(range(len(ds))):
 
     # with open("dataset/dbpedia/llm_graph_gpt3.json", "w") as f:
     #     json.dump(inference_list, f, indent=4)
-
-    break

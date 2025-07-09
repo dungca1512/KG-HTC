@@ -12,12 +12,10 @@ class VectorDB:
         self._collection_name = collection_name
         self._database_path = database_path
 
+        # Sử dụng OpenAI embedding function
         self._embed_func = embedding_functions.OpenAIEmbeddingFunction(
-            api_type="azure",
-            api_key=os.getenv("API_KEY"),
-            api_base=os.getenv("AZURE_ENDPOINT"),
-            api_version=os.getenv("API_VERSION"),
-            model_name=os.getenv("EMBEDDING_DEPLOYMENT_NAME"),
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model_name="text-embedding-ada-002",
         )
 
         self._client = chromadb.PersistentClient(path=self._database_path)
