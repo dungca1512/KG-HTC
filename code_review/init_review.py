@@ -15,7 +15,7 @@ load_dotenv()
 def init_multilabel_data():
     config = {
         "data_name": "custom_review",
-        "data_path": "/Users/dungca/Desktop/KG-HTC/sample_data.xlsx",
+        "data_path": "/Users/dungca/KG-HTC/sample_data.xlsx",
         "vectdb_path": "database/custom_review",
         "template": {
             "sys": "prompts/system/custom/llm_graph.txt",
@@ -169,6 +169,9 @@ def init_multilabel_data():
         collection_name=config["data_name"]
     )
     
+    # In ra đường dẫn tuyệt đối của vector DB
+    print("VECTOR DB PATH (init):", os.path.abspath(config["vectdb_path"]))
+    
     # Sử dụng descriptions từ Tag list nếu có
     print("Processing tag descriptions...")
     
@@ -194,12 +197,15 @@ def init_multilabel_data():
     
     print(f"Adding {len(all_types)} level 1 labels...")
     vector_db.batch_add(l1_texts, metadatas=[{"level": "Category1"}] * len(all_types))
+    print("Số lượng document hiện tại sau L1:", len(vector_db._collection.get()["documents"]))
     
     print(f"Adding {len(all_categories)} level 2 labels...")
     vector_db.batch_add(l2_texts, metadatas=[{"level": "Category2"}] * len(all_categories))
+    print("Số lượng document hiện tại sau L2:", len(vector_db._collection.get()["documents"]))
     
     print(f"Adding {len(all_tags)} level 3 labels...")
     vector_db.batch_add(l3_texts, metadatas=[{"level": "Category3"}] * len(all_tags))
+    print("Số lượng document hiện tại sau L3:", len(vector_db._collection.get()["documents"]))
     
     print("VectorDB created successfully!")
     

@@ -13,7 +13,7 @@ password = "dL0sJtPiMXxm0NRU8OH_tn3sQ5xS-KOrwR2if-UyYDw"
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # Đọc dữ liệu
-df = pd.read_excel('/Users/dungca/Desktop/KG-HTC/dataset/wos/Meta-data/Data.xlsx')
+df = pd.read_excel('/Users/dungca/KG-HTC/dataset/wos/Meta-data/Data.xlsx')
 df['id'] = df.index
 
 # Tạo node Domain

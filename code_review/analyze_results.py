@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from collections import Counter
 import numpy as np
+import os
 
 def analyze_multilabel_results():
     """Analyze multi-label classification results"""
@@ -184,18 +185,140 @@ def analyze_multilabel_results():
         
         # Load metrics if available
         try:
-            with open("dataset/multilabel_metrics.json", "r", encoding='utf-8') as f:
-                metrics = json.load(f)
-            
-            type_metrics = metrics['type_metrics']
-            print(f"Type Classification:")
-            print(f"  Exact Match: {type_metrics['exact_match_ratio']:.3f}")
-            print(f"  Avg F1:      {type_metrics['avg_f1']:.3f}")
-            print(f"  Avg Precision: {type_metrics['avg_precision']:.3f}")
-            print(f"  Avg Recall:    {type_metrics['avg_recall']:.3f}")
-            
-        except FileNotFoundError:
-            print("Metrics file not found. Run multilabel_classification.py first.")
+            # Thử mở file metrics v2 trước, nếu không có thì mở file cũ
+            metrics_path = None
+            for path in ["dataset/multilabel_metrics_v2.json", "dataset/multilabel_metrics.json"]:
+                if os.path.exists(path):
+                    metrics_path = path
+                    break
+            if metrics_path is None:
+                print("Metrics file not found. Run multilabel_classification.py first.")
+            else:
+                with open(metrics_path, "r", encoding='utf-8') as f:
+                    metrics = json.load(f)
+                # Ưu tiên lấy metrics sklearn nếu có
+                if 'type_metrics_sklearn' in metrics:
+                    type_metrics = metrics['type_metrics_sklearn']
+                    print(f"Type Classification (macro/micro, sklearn):")
+                    print(f"  Macro F1: {type_metrics['macro_f1']:.3f}")
+                    print(f"  Micro F1: {type_metrics['micro_f1']:.3f}")
+                    print(f"  Macro Precision: {type_metrics['macro_precision']:.3f}")
+                    print(f"  Micro Precision: {type_metrics['micro_precision']:.3f}")
+                    print(f"  Macro Recall: {type_metrics['macro_recall']:.3f}")
+                    print(f"  Micro Recall: {type_metrics['micro_recall']:.3f}")
+                elif 'type_metrics' in metrics:
+                    type_metrics = metrics['type_metrics']
+                    print(f"Type Classification:")
+                    print(f"  Exact Match: {type_metrics['exact_match_ratio']:.3f}")
+                    print(f"  Avg F1:      {type_metrics['avg_f1']:.3f}")
+                    print(f"  Avg Precision: {type_metrics['avg_precision']:.3f}")
+                    print(f"  Avg Recall:    {type_metrics['avg_recall']:.3f}")
+                else:
+                    print("No type metrics found in metrics file.")
+        except Exception as e:
+            print(f"❌ Error analyzing metrics: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # --- Bổ sung xuất confusion matrix và sample sai cho file v2 ---
+        if metrics_path and metrics_path.endswith("_v2.json"):
+            import numpy as np
+            from sklearn.preprocessing import MultiLabelBinarizer
+            from sklearn.metrics import multilabel_confusion_matrix
+            # Chuẩn bị dữ liệu
+            def get_true_pred_lists(field):
+                true_list = [r[f'true_{field}'] for r in valid_results]
+                pred_list = [r[f'pred_{field}'] for r in valid_results]
+                mlb = MultiLabelBinarizer()
+                mlb.fit(true_list + pred_list)
+                y_true = mlb.transform(true_list)
+                y_pred = mlb.transform(pred_list)
+                return y_true, y_pred, mlb
+            # Confusion matrix cho từng trường
+            for field in ['types', 'categories', 'tags']:
+                y_true, y_pred, mlb = get_true_pred_lists(field)
+                cm = multilabel_confusion_matrix(y_true, y_pred)
+                # Lưu từng nhãn thành bảng riêng, nối dọc vào 1 file CSV
+                with open(f"dataset/confusion_matrix_{field}_v2.csv", "w", encoding='utf-8') as f:
+                    f.write("label,tn,fp,fn,tp\n")
+                    for i, label in enumerate(mlb.classes_):
+                        tn, fp, fn, tp = cm[i].ravel()
+                        f.write(f"{label},{tn},{fp},{fn},{tp}\n")
+            print("Đã lưu confusion matrix cho type, category, tag vào dataset/confusion_matrix_*_v2.csv")
+            # Lưu sample sai
+            wrong_samples = []
+            for r in valid_results:
+                type_wrong = set(r['true_types']) != set(r['pred_types'])
+                cat_wrong = set(r['true_categories']) != set(r['pred_categories'])
+                tag_wrong = set(r['true_tags']) != set(r['pred_tags'])
+                if type_wrong or cat_wrong or tag_wrong:
+                    wrong_samples.append({
+                        'text': r['text'],
+                        'true_types': r['true_types'], 'pred_types': r['pred_types'],
+                        'true_categories': r['true_categories'], 'pred_categories': r['pred_categories'],
+                        'true_tags': r['true_tags'], 'pred_tags': r['pred_tags'],
+                        'type_wrong': type_wrong, 'category_wrong': cat_wrong, 'tag_wrong': tag_wrong
+                    })
+            with open("dataset/wrong_samples_v2.json", "w", encoding='utf-8') as f:
+                json.dump(wrong_samples, f, indent=4, ensure_ascii=False)
+            print(f"Đã lưu {len(wrong_samples)} sample sai vào dataset/wrong_samples_v2.json")
+        
+        # --- Bổ sung trực quan hóa confusion matrix cho file v2 ---
+        if metrics_path and metrics_path.endswith("_v2.json"):
+            import numpy as np
+            from sklearn.preprocessing import MultiLabelBinarizer
+            from sklearn.metrics import multilabel_confusion_matrix
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+            # Chuẩn bị dữ liệu
+            def get_true_pred_lists(field):
+                true_list = [r[f'true_{field}'] for r in valid_results]
+                pred_list = [r[f'pred_{field}'] for r in valid_results]
+                mlb = MultiLabelBinarizer()
+                mlb.fit(true_list + pred_list)
+                y_true = mlb.transform(true_list)
+                y_pred = mlb.transform(pred_list)
+                return y_true, y_pred, mlb
+            # Confusion matrix cho từng trường
+            for field in ['types', 'categories', 'tags']:
+                y_true, y_pred, mlb = get_true_pred_lists(field)
+                cm = multilabel_confusion_matrix(y_true, y_pred)
+                # Lưu từng nhãn thành bảng riêng, nối dọc vào 1 file CSV
+                with open(f"dataset/confusion_matrix_{field}_v2.csv", "w", encoding='utf-8') as f:
+                    f.write("label,tn,fp,fn,tp\n")
+                    for i, label in enumerate(mlb.classes_):
+                        tn, fp, fn, tp = cm[i].ravel()
+                        f.write(f"{label},{tn},{fp},{fn},{tp}\n")
+                # Vẽ heatmap cho từng nhãn (nếu số nhãn <= 20)
+                if len(mlb.classes_) <= 20:
+                    # Tạo ma trận tổng hợp: mỗi nhãn là một confusion matrix 2x2, ta chỉ vẽ TP/FP/FN cho từng nhãn
+                    matrix = np.array([[cm[i][1,1], cm[i][0,1], cm[i][1,0]] for i in range(len(mlb.classes_))])
+                    # TP, FP, FN
+                    plt.figure(figsize=(max(8, len(mlb.classes_)*0.7), 5))
+                    sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues',
+                                yticklabels=mlb.classes_, xticklabels=['TP','FP','FN'])
+                    plt.title(f'Confusion Matrix for {field.capitalize()} (per label)')
+                    plt.ylabel('Label')
+                    plt.xlabel('Metric')
+                    plt.tight_layout()
+                    plt.savefig(f"dataset/confusion_matrix_{field}_v2.png")
+                    plt.close()
+                else:
+                    # Nếu quá nhiều nhãn, chỉ vẽ top 20 nhãn xuất hiện nhiều nhất
+                    true_flat = [l for sub in [r[f'true_{field}'] for r in valid_results] for l in sub]
+                    top_labels = [l for l,_ in Counter(true_flat).most_common(20)]
+                    idxs = [i for i,l in enumerate(mlb.classes_) if l in top_labels]
+                    matrix = np.array([[cm[i][1,1], cm[i][0,1], cm[i][1,0]] for i in idxs])
+                    plt.figure(figsize=(12, 6))
+                    sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues',
+                                yticklabels=[mlb.classes_[i] for i in idxs], xticklabels=['TP','FP','FN'])
+                    plt.title(f'Confusion Matrix for {field.capitalize()} (Top 20 labels)')
+                    plt.ylabel('Label')
+                    plt.xlabel('Metric')
+                    plt.tight_layout()
+                    plt.savefig(f"dataset/confusion_matrix_{field}_v2.png")
+                    plt.close()
+            print("Đã lưu confusion matrix cho type, category, tag vào dataset/confusion_matrix_*_v2.csv và PNG")
         
         print(f"\n✅ Analysis completed!")
         

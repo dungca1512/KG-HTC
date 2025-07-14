@@ -1,0 +1,12 @@
+{
+  "ids": [],
+  "embeddings": null,
+  "documents": [],
+  "uris": null,
+  "included": [
+    "metadatas",
+    "documents"
+  ],
+  "data": null,
+  "metadatas": []
+}
