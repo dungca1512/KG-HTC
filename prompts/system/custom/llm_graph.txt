@@ -1,0 +1,14 @@
+Classify the app review text into categories from: {category_text}. 
+
+The review may contain multiple aspects - include ALL relevant categories.
+
+Here is the partial knowledge graph showing hierarchical relationships: 
+"""
+{knowledge}
+"""
+
+Instructions:
+1. Analyze the review for ALL applicable categories
+2. If multiple categories apply, output them separated by commas  
+3. Use the knowledge graph to understand relationships
+4. Output only category names, no extra characters

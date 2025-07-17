@@ -27,13 +27,11 @@ class MultiLabelPipeline:
         return "**" + "**, **".join(categories) + "**"
     
     def _extract_tag_name(self, description: str) -> str:
-        """Extract tag name from description format 'TagName: Description'"""
         if ':' in description:
             return description.split(':')[0].strip().lower().replace(' ', '').replace('\'', '').replace('\"', '')
         return description.lower().replace(' ', '').replace('\'', '').replace('\"', '')
     
     def query_related_nodes(self, text: str) -> Dict[str, Any]:
-        """Query related nodes from vector database"""
         try:
             l2_result = self._vector_db.query_l2(text, self._config["query_params"]["l2_top_k"])
             l2_nodes = l2_result["documents"][0] if l2_result["documents"] and l2_result["documents"][0] else []
@@ -52,35 +50,44 @@ class MultiLabelPipeline:
             return {"l2": [], "l3": []}
     
     def build_linked_labels(self, l3_nodes: List[str], related_l2_nodes: List[str]) -> List[str]:
-        """Build linked labels with proper tag name extraction"""
         labels = []
         
         if not l3_nodes or len(l3_nodes) == 0:
+            print("[DEBUG] No l3_nodes provided to build_linked_labels")
             return labels
             
         for l3_node in l3_nodes:
             try:
+                print(f"[DEBUG] l3_node: {l3_node}")
                 tag_name = self._extract_tag_name(l3_node)
+                print(f"[DEBUG] Extracted tag_name: {tag_name}")
                 
                 try:
                     l2_node = self._graph_db.query_l2_from_l3(tag_name)
+                    print(f"[DEBUG] l2_node from tag_name '{tag_name}': {l2_node}")
                 except Exception as e:
+                    print(f"[ERROR] query_l2_from_l3 failed for tag_name '{tag_name}': {e}")
                     continue
                 
                 try:
                     l1_node = self._graph_db.query_l1_from_l2(l2_node)
+                    print(f"[DEBUG] l1_node from l2_node '{l2_node}': {l1_node}")
                 except Exception as e:
+                    print(f"[ERROR] query_l1_from_l2 failed for l2_node '{l2_node}': {e}")
                     continue
                 
                 labels.append(f"{l1_node} -> {l2_node} -> {tag_name}")
+                print(f"[DEBUG] Added label: {l1_node} -> {l2_node} -> {tag_name}")
                     
             except Exception as e:
+                print(f"[ERROR] build_linked_labels failed for l3_node '{l3_node}': {e}")
                 continue
                 
+        if not labels:
+            print("[DEBUG] No linked labels could be built from provided l3_nodes.")
         return labels
     
     def build_simple_subgraph(self, l2_nodes: List[str]) -> List[str]:
-        """Build simple subgraph using only L2 nodes"""
         subgraph = []
         
         for l2_node in l2_nodes[:5]:
@@ -98,7 +105,6 @@ class MultiLabelPipeline:
             sub_graph: List[str],
             level_name: str = "category"
         ) -> List[str]:
-        """Predict multiple labels for mixed sentiment cases"""
         
         if not context_nodes or len(context_nodes) == 0:
             return ["unknown"]
@@ -175,7 +181,6 @@ Here is the hierarchical knowledge graph:
             context_nodes: List[str], 
             sub_graph: List[str]
         ) -> str:
-        """Single label prediction (for backward compatibility)"""
         
         multi_labels = self.predict_multi_labels(query_text, context_nodes, sub_graph)
         return multi_labels[0] if multi_labels else "unknown"

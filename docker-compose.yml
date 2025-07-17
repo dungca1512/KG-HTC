@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  kg-htc-app:
+    build: .
+    container_name: kg-htc-app
+    ports:
+      - "8501:8501"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NEO4J_URI=${NEO4J_URI}
+      - NEO4J_USERNAME=${NEO4J_USERNAME}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+    volumes:
+      # Mount data directories for persistence
+      - ./dataset:/app/dataset
+      - ./database:/app/database
+      - ./prompts:/app/prompts
+    depends_on:
+      - neo4j
+    restart: unless-stopped
+    networks:
+      - kg-htc-network
+
+  neo4j:
+    image: neo4j:5.15
+    container_name: kg-htc-neo4j
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    environment:
+      - NEO4J_AUTH=${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-password}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    restart: unless-stopped
+    networks:
+      - kg-htc-network
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:
+  neo4j_plugins:
+
+networks:
+  kg-htc-network:
+    driver: bridge 

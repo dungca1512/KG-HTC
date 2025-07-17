@@ -55,9 +55,9 @@ def run_multilabel_classification():
     print(f"Loaded {len(df)} samples")
     print(f"Columns: {df.columns.tolist()}")
     print("\nParsing ground truth multi-labels...")
-    df['true_types'] = df['type'].apply(parse_multilabel_ground_truth)
-    df['true_categories'] = df['category'].apply(parse_multilabel_ground_truth)
-    df['true_tags'] = df['tag'].apply(parse_multilabel_ground_truth)
+    df['true_types'] = df['Type_clean'].apply(parse_multilabel_ground_truth)
+    df['true_categories'] = df['Category_clean'].apply(parse_multilabel_ground_truth)
+    df['true_tags'] = df['Tag_clean'].apply(parse_multilabel_ground_truth)
     all_types = set()
     all_categories = set()
     all_tags = set()
@@ -92,7 +92,8 @@ def run_multilabel_classification():
         if idx < len(inference_list):
             continue
         data = ds[idx].copy()
-        review_text = data['text']
+        # Sử dụng Tag_clean làm review_text vì không còn cột 'text' trong file processed
+        review_text = data['Tag_clean']
         try:
             print(f"\n--- Sample {idx}: {review_text[:100]}...")
             retrieved_nodes = pipeline.query_related_nodes(review_text)
@@ -212,13 +213,18 @@ def run_multilabel_classification():
         print(f"\n🔍 Sample Multi-label Predictions:")
         print(f"=" * 60)
         for i, item in enumerate(valid_results[:5]):
-            print(f"\n{i+1}. Text: {item['text'][:80]}...")
+            print(f"\n{i+1}. Tag: {item['Tag_clean'][:80]}...")
             print(f"   True Types: {item['true_types']}")
             print(f"   Pred Types: {item['pred_types']}")
             print(f"   True Categories: {item['true_categories']}")
             print(f"   Pred Categories: {item['pred_categories']}")
             print(f"   True Tags: {item['true_tags']}")
             print(f"   Pred Tags: {item['pred_tags']}")
+            # Check matches
+            type_match = set(item['true_types']) == set(item['pred_types'])
+            cat_match = set(item['true_categories']) == set(item['pred_categories'])
+            tag_match = set(item['true_tags']) == set(item['pred_tags'])
+            print(f"   Matches: Type={type_match}, Category={cat_match}, Tag={tag_match}")
         metrics_summary = {
             "total_samples": len(valid_results),
             "type_metrics_sklearn": type_sklearn_metrics,
